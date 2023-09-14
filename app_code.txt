@@ -1,0 +1,302 @@
+classdef app1 < matlab.apps.AppBase
+
+    % Properties that correspond to app components
+    properties (Access = public)
+        UIFigure                   matlab.ui.Figure
+        FIRIIRBANDPASSFILTERLabel  matlab.ui.control.Label
+        Frequency2EditField        matlab.ui.control.NumericEditField
+        Frequency2EditFieldLabel   matlab.ui.control.Label
+        Frequency1EditField        matlab.ui.control.NumericEditField
+        Frequency1EditFieldLabel   matlab.ui.control.Label
+        FIRFilteredFDButton        matlab.ui.control.Button
+        FIRFilteredTDButton        matlab.ui.control.Button
+        IIRFilteredFDButton        matlab.ui.control.Button
+        IIRFilteredTDButton        matlab.ui.control.Button
+        OrginalVoiceFDButton       matlab.ui.control.Button
+        OriginalVoiceTDButton      matlab.ui.control.Button
+        UIAxes6                    matlab.ui.control.UIAxes
+        UIAxes5                    matlab.ui.control.UIAxes
+        UIAxes4                    matlab.ui.control.UIAxes
+        UIAxes3                    matlab.ui.control.UIAxes
+        UIAxes2                    matlab.ui.control.UIAxes
+        UIAxes                     matlab.ui.control.UIAxes
+    end
+
+    % Callbacks that handle component events
+    methods (Access = private)
+
+        % Button pushed function: OrginalVoiceFDButton
+        function OrginalVoiceFDButtonPushed(app, event)
+             [y, Fs] = audioread("C:\Users\DELL\Documents\MATLAB\studio.wav");
+    save press y Fs
+    filename = 'studio.wav';
+    audiowrite(filename,y,Fs);
+    clear y Fs
+    [y,Fs]= audioread(filename);
+    sound(y,Fs)
+
+    fs = 8000;
+    nfft = 2048;
+    f= linspace(0,fs,nfft);
+    Y = abs(fft(y,nfft));
+
+    plot(app.UIAxes,f(1:nfft/2),Y(1:nfft/2));
+        end
+
+        % Button pushed function: IIRFilteredFDButton
+        function IIRFilteredFDButtonPushed(app, event)
+             [y, Fs] = audioread("C:\Users\DELL\Documents\MATLAB\studio.wav");
+    save press y Fs
+    filename = 'studio.wav';
+    audiowrite(filename,y,Fs);
+    clear y Fs
+    [y,Fs]= audioread(filename);
+             iirBPFilt = designfilt('bandpassiir', 'FilterOrder', 100, ...
+                       'HalfPowerFrequency1', app.Frequency1EditField.Value, 'HalfPowerFrequency2', app.Frequency2EditField.Value, ...
+                       'SampleRate', Fs);
+    dataIn = y,Fs;
+    dataOut2 = filter(iirBPFilt,dataIn);
+    sound(dataOut2,Fs)
+
+    fs = 8000;
+    nfft = 2048;
+    f = linspace(0,fs,nfft);
+    Y= abs(fft(dataOut2,nfft));
+
+    plot(app.UIAxes2,f(1:nfft/2),Y(1:nfft/2));
+        end
+
+        % Button pushed function: FIRFilteredFDButton
+        function FIRFilteredFDButtonPushed(app, event)
+             [y, Fs] = audioread("C:\Users\DELL\Documents\MATLAB\studio.wav");
+    save press y Fs
+    filename = 'studio.wav';
+    audiowrite(filename,y,Fs);
+    clear y Fs
+    [y,Fs]= audioread(filename);
+              firBPFilt = designfilt('bandpassfir', 'FilterOrder', 100, ...
+                       'CutoffFrequency1', 20, 'CutoffFrequency2', 600, ...
+                       'SampleRate', 8000);
+    dataIn = y,Fs;
+    dataOut = filter(firBPFilt,dataIn);
+    sound(dataOut,Fs)
+
+    fs = 8000;
+    nfft = 2048;
+    f = linspace(0,fs,nfft);
+    Y= abs(fft(dataOut,nfft));
+
+    plot(app.UIAxes3,f(1:nfft/2),Y(1:nfft/2));
+        end
+
+        % Button pushed function: OriginalVoiceTDButton
+        function OriginalVoiceTDButtonPushed(app, event)
+             [y, Fs] = audioread("C:\Users\DELL\Documents\MATLAB\studio.wav");
+    save press y Fs
+    t = (0:length(y) - 1) / Fs;  % Time vector for the original audio
+        plot(app.UIAxes6,t,y);
+        end
+
+        % Button pushed function: IIRFilteredTDButton
+        function IIRFilteredTDButtonPushed(app, event)
+              [y, Fs] = audioread("C:\Users\DELL\Documents\MATLAB\studio.wav");
+    save press y Fs
+        filename = 'studio.wav';
+    audiowrite(filename,y,Fs);
+    clear y Fs
+            [y,Fs]= audioread(filename);
+             iirBPFilt = designfilt('bandpassiir', 'FilterOrder', 100, ...
+                       'HalfPowerFrequency1', app.Frequency1EditField.Value, 'HalfPowerFrequency2', app.Frequency2EditField.Value, ...
+                       'SampleRate', Fs);
+    dataIn = y,Fs;
+    dataOut2 = filter(iirBPFilt,dataIn);
+            t_filtered = (0:length(dataOut2) - 1) / Fs;
+            plot(app.UIAxes5,t_filtered,dataOut2);
+        end
+
+        % Button pushed function: FIRFilteredTDButton
+        function FIRFilteredTDButtonPushed(app, event)
+             [y, Fs] = audioread("C:\Users\DELL\Documents\MATLAB\studio.wav");
+    save press y Fs
+    filename = 'studio.wav';
+    audiowrite(filename,y,Fs);
+    clear y Fs
+            [y,Fs]= audioread(filename);
+              firBPFilt = designfilt('bandpassfir', 'FilterOrder', 100, ...
+                       'CutoffFrequency1', app.Frequency1EditField.Value, 'CutoffFrequency2', app.Frequency2EditField.Value, ...
+                       'SampleRate', 8000);
+    dataIn = y,Fs;
+    dataOut = filter(firBPFilt,dataIn);
+            t_filtered = (0:length(dataOut) - 1) / Fs;
+            plot(app.UIAxes4,t_filtered,dataOut);
+        end
+
+        % Value changed function: Frequency1EditField
+        function Frequency1EditFieldValueChanged(app, event)
+            value = app.Frequency1EditField.Value;
+            
+        end
+
+        % Value changed function: Frequency2EditField
+        function Frequency2EditFieldValueChanged(app, event)
+            value = app.Frequency2EditField.Value;
+            
+        end
+    end
+
+    % Component initialization
+    methods (Access = private)
+
+        % Create UIFigure and components
+        function createComponents(app)
+
+            % Create UIFigure and hide until all components are created
+            app.UIFigure = uifigure('Visible', 'off');
+            app.UIFigure.Position = [100 100 665 511];
+            app.UIFigure.Name = 'MATLAB App';
+
+            % Create UIAxes
+            app.UIAxes = uiaxes(app.UIFigure);
+            title(app.UIAxes, 'Response of original voice(FD)')
+            xlabel(app.UIAxes, 'Frequency')
+            ylabel(app.UIAxes, 'Magnitude')
+            zlabel(app.UIAxes, 'Z')
+            app.UIAxes.Position = [242 360 422 116];
+
+            % Create UIAxes2
+            app.UIAxes2 = uiaxes(app.UIFigure);
+            title(app.UIAxes2, 'IIR Filtered(FD)')
+            xlabel(app.UIAxes2, 'Frequency')
+            ylabel(app.UIAxes2, 'Magnitude')
+            zlabel(app.UIAxes2, 'Z')
+            app.UIAxes2.Position = [246 235 420 126];
+
+            % Create UIAxes3
+            app.UIAxes3 = uiaxes(app.UIFigure);
+            title(app.UIAxes3, 'FIR Filtered(FD)')
+            xlabel(app.UIAxes3, 'Frequency')
+            ylabel(app.UIAxes3, 'Magnitude')
+            zlabel(app.UIAxes3, 'Z')
+            app.UIAxes3.Position = [253 115 406 122];
+
+            % Create UIAxes4
+            app.UIAxes4 = uiaxes(app.UIFigure);
+            title(app.UIAxes4, 'Original Voice(TD)')
+            xlabel(app.UIAxes4, 'Time(s)')
+            ylabel(app.UIAxes4, 'Magnitude')
+            zlabel(app.UIAxes4, 'Z')
+            app.UIAxes4.Position = [1 119 250 117];
+
+            % Create UIAxes5
+            app.UIAxes5 = uiaxes(app.UIFigure);
+            title(app.UIAxes5, 'FIR Filtered(TD)')
+            xlabel(app.UIAxes5, 'Time(s)')
+            ylabel(app.UIAxes5, 'Magnitude')
+            zlabel(app.UIAxes5, 'Z')
+            app.UIAxes5.Position = [250 1 414 119];
+
+            % Create UIAxes6
+            app.UIAxes6 = uiaxes(app.UIFigure);
+            title(app.UIAxes6, 'IIR Filter(TD)')
+            xlabel(app.UIAxes6, 'Time(s)')
+            ylabel(app.UIAxes6, 'Magnitude')
+            zlabel(app.UIAxes6, 'Z')
+            app.UIAxes6.Position = [10 1 244 119];
+
+            % Create OriginalVoiceTDButton
+            app.OriginalVoiceTDButton = uibutton(app.UIFigure, 'push');
+            app.OriginalVoiceTDButton.ButtonPushedFcn = createCallbackFcn(app, @OriginalVoiceTDButtonPushed, true);
+            app.OriginalVoiceTDButton.Position = [10 304 114 23];
+            app.OriginalVoiceTDButton.Text = 'Original Voice(TD)';
+
+            % Create OrginalVoiceFDButton
+            app.OrginalVoiceFDButton = uibutton(app.UIFigure, 'push');
+            app.OrginalVoiceFDButton.ButtonPushedFcn = createCallbackFcn(app, @OrginalVoiceFDButtonPushed, true);
+            app.OrginalVoiceFDButton.Position = [128 304 111 23];
+            app.OrginalVoiceFDButton.Text = 'Orginal Voice(FD)';
+
+            % Create IIRFilteredTDButton
+            app.IIRFilteredTDButton = uibutton(app.UIFigure, 'push');
+            app.IIRFilteredTDButton.ButtonPushedFcn = createCallbackFcn(app, @IIRFilteredTDButtonPushed, true);
+            app.IIRFilteredTDButton.Position = [17 269 100 23];
+            app.IIRFilteredTDButton.Text = 'IIR Filtered(TD)';
+
+            % Create IIRFilteredFDButton
+            app.IIRFilteredFDButton = uibutton(app.UIFigure, 'push');
+            app.IIRFilteredFDButton.ButtonPushedFcn = createCallbackFcn(app, @IIRFilteredFDButtonPushed, true);
+            app.IIRFilteredFDButton.Position = [128 269 100 23];
+            app.IIRFilteredFDButton.Text = 'IIR Filtered(FD)';
+
+            % Create FIRFilteredTDButton
+            app.FIRFilteredTDButton = uibutton(app.UIFigure, 'push');
+            app.FIRFilteredTDButton.ButtonPushedFcn = createCallbackFcn(app, @FIRFilteredTDButtonPushed, true);
+            app.FIRFilteredTDButton.Position = [15 236 102 23];
+            app.FIRFilteredTDButton.Text = 'FIR Filtered(TD)';
+
+            % Create FIRFilteredFDButton
+            app.FIRFilteredFDButton = uibutton(app.UIFigure, 'push');
+            app.FIRFilteredFDButton.ButtonPushedFcn = createCallbackFcn(app, @FIRFilteredFDButtonPushed, true);
+            app.FIRFilteredFDButton.Position = [128 236 102 23];
+            app.FIRFilteredFDButton.Text = 'FIR Filtered(FD)';
+
+            % Create Frequency1EditFieldLabel
+            app.Frequency1EditFieldLabel = uilabel(app.UIFigure);
+            app.Frequency1EditFieldLabel.HorizontalAlignment = 'right';
+            app.Frequency1EditFieldLabel.Position = [26 413 69 22];
+            app.Frequency1EditFieldLabel.Text = 'Frequency1';
+
+            % Create Frequency1EditField
+            app.Frequency1EditField = uieditfield(app.UIFigure, 'numeric');
+            app.Frequency1EditField.ValueChangedFcn = createCallbackFcn(app, @Frequency1EditFieldValueChanged, true);
+            app.Frequency1EditField.Position = [110 413 100 22];
+
+            % Create Frequency2EditFieldLabel
+            app.Frequency2EditFieldLabel = uilabel(app.UIFigure);
+            app.Frequency2EditFieldLabel.HorizontalAlignment = 'right';
+            app.Frequency2EditFieldLabel.Position = [26 360 69 22];
+            app.Frequency2EditFieldLabel.Text = 'Frequency2';
+
+            % Create Frequency2EditField
+            app.Frequency2EditField = uieditfield(app.UIFigure, 'numeric');
+            app.Frequency2EditField.ValueChangedFcn = createCallbackFcn(app, @Frequency2EditFieldValueChanged, true);
+            app.Frequency2EditField.Position = [110 360 100 22];
+
+            % Create FIRIIRBANDPASSFILTERLabel
+            app.FIRIIRBANDPASSFILTERLabel = uilabel(app.UIFigure);
+            app.FIRIIRBANDPASSFILTERLabel.FontName = 'Algerian';
+            app.FIRIIRBANDPASSFILTERLabel.FontSize = 25;
+            app.FIRIIRBANDPASSFILTERLabel.FontWeight = 'bold';
+            app.FIRIIRBANDPASSFILTERLabel.FontAngle = 'italic';
+            app.FIRIIRBANDPASSFILTERLabel.Position = [10 463 342 31];
+            app.FIRIIRBANDPASSFILTERLabel.Text = 'FIR & IIR BANDPASS FILTER';
+
+            % Show the figure after all components are created
+            app.UIFigure.Visible = 'on';
+        end
+    end
+
+    % App creation and deletion
+    methods (Access = public)
+
+        % Construct app
+        function app = app1
+
+            % Create UIFigure and components
+            createComponents(app)
+
+            % Register the app with App Designer
+            registerApp(app, app.UIFigure)
+
+            if nargout == 0
+                clear app
+            end
+        end
+
+        % Code that executes before app deletion
+        function delete(app)
+
+            % Delete UIFigure when app is deleted
+            delete(app.UIFigure)
+        end
+    end
+end

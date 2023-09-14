@@ -1,0 +1,77 @@
+% Let the user choose an audio file using a file picker dialog
+[filename, filepath] = uigetfile('*.wav', 'studio.wav');
+
+% Construct the full file path
+fullFilePath = fullfile(filepath, filename);
+
+% Read the selected audio file
+[y, Fs] = audioread(fullFilePath);
+
+% IIR Bandpass Filter Design
+iirBPFilt = designfilt('bandpassiir', 'FilterOrder', 100, ...
+                       'HalfPowerFrequency1', 300, 'HalfPowerFrequency2', 2000, ...
+                       'SampleRate', Fs);  % Use the same Fs as the input audio
+
+dataIn = y;
+iirDataOut = filter(iirBPFilt, dataIn);
+
+% FIR Bandpass Filter Design
+firBPFilt = designfilt('bandpassfir', 'FilterOrder', 100, ...
+                       'CutoffFrequency1',700, 'CutoffFrequency2',1000, ...
+                       'SampleRate', Fs);  % Use the same Fs as the input audio
+
+firDataOut = filter(firBPFilt, dataIn);
+
+% Playing audio
+sound(y, Fs)        % Input audio
+pause(5)
+sound(iirDataOut, Fs)  % IIR bandpass filtered audio
+pause(5)
+sound(firDataOut, Fs)  % FIR bandpass filtered audio
+
+% Time Domain Plots
+t = (0:length(y) - 1) / Fs;  % Time vector for the original audio
+figure
+plot(t, y)
+xlabel('Time (s)')
+title('Original Audio')
+
+figure
+t_filtered = (0:length(iirDataOut) - 1) / Fs;  % Time vector for the filtered audio
+plot(t_filtered, iirDataOut)
+xlabel('Time (s)')
+title('IIR Filtered Audio')
+
+figure
+plot(t_filtered, firDataOut)
+xlabel('Time (s)')
+title('FIR Filtered Audio')
+
+% FFT and Frequency Visualization
+fs = Fs;  % Use the sampling frequency of the input audio
+nfft = 2048;
+f = linspace(0, fs, nfft);
+Y = abs(fft(y, nfft));
+
+figure
+plot(f(1:nfft/2), Y(1:nfft/2))
+xlabel('Frequency')
+title('Original Audio')
+
+nfft = 2048;
+f = linspace(0, fs, nfft);
+Y = abs(fft(iirDataOut, nfft));
+
+figure
+plot(f(1:nfft/2), Y(1:nfft/2))
+xlabel('Frequency')
+title('IIR FILTER')
+
+nfft = 2048;
+f = linspace(0, fs, nfft);
+Y = abs(fft(firDataOut, nfft));
+
+figure
+plot(f(1:nfft/2), Y(1:nfft/2))
+xlabel('Frequency')
+title('FIR FILTER')
